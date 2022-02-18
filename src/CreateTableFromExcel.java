@@ -3,11 +3,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.util.StringUtil;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.File;
 
 
 public class CreateTableFromExcel {
@@ -33,16 +31,26 @@ public class CreateTableFromExcel {
 	static final int COLUMN_TABLE_COMMENT = 1;
 
 	/** Row number of comments */
-	static final int ROW_COLUMN_NAME = 1;
+	static final int ROW_NAME = 1;
 	
 	/** Column number of column name */
-	static final int COLUMN_COLUMN_NAME = 3;
+	static final int COLUMN_NAME = 3;
 	
 	/** Row number of comments */
 	static final int ROW_COLUMN_COMMENTS = 1;
 	
+	/** Column number of data type */
+	static final int COLUMN_DATA_TYPE = 4;
+	
+	/** Column number of nullable */
+	static final int COLUMN_NULLABLE = 5;
+	
+	/** Column number of data default */
+	static final int COLUMN_DATA_DEFAULT = 6;
+	
 	/** Column number of comments */
-	static final int COLUMN_COLUMN_COMMENTS = 7;
+	static final int COLUMN_COMMENTS = 7;
+	
 
 	public static void main(String[] args) {
 
@@ -68,11 +76,6 @@ public class CreateTableFromExcel {
         
         /** Set columns information list */
         tableInfo.setColunmList(getColumnInfoList(sheet));
-
-        
-        System.out.println(tableInfo.getTableName());
-        System.out.println(tableInfo.getTableSchema());
-        System.out.println(tableInfo.getTableComment());
         
 	}
 	/**
@@ -84,13 +87,19 @@ public class CreateTableFromExcel {
 	static private List<ColumnInfo> getColumnInfoList(XSSFSheet sheet){
 		List<ColumnInfo> columnInfoList = new ArrayList<ColumnInfo>();
 		
-        for(int row = ROW_COLUMN_NAME; row <= ROW_MAX; row++ ) {
-        	for(int column = ROW_COLUMN_NAME; column <= COLUMN_COLUMN_COMMENTS; column++) {
-        		if(StringUtils.isBlank((sheet.getRow(row).getCell(column).getStringCellValue()))) {
+        for(int row = ROW_NAME; row <= ROW_MAX; row++ ) {
+        		if(StringUtils.isBlank((sheet.getRow(row).getCell(3).getStringCellValue()))) {
         			break;
         		}
+        		ColumnInfo columnInfo = new ColumnInfo();
+
+        		columnInfo.setColumnName(sheet.getRow(row).getCell(COLUMN_NAME).getStringCellValue());
+        		columnInfo.setDataType(sheet.getRow(row).getCell(COLUMN_DATA_TYPE).getStringCellValue());
+        		columnInfo.setNullable(sheet.getRow(row).getCell(COLUMN_NULLABLE).getStringCellValue());
+        		columnInfo.setDataDefault(sheet.getRow(row).getCell(COLUMN_DATA_DEFAULT).getStringCellValue());
+        		columnInfo.setComments(sheet.getRow(row).getCell(COLUMN_COMMENTS).getStringCellValue());
         		
-        	}
+        		columnInfoList.add(columnInfo);
         }
 		
 		return columnInfoList;

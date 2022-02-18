@@ -1,40 +1,56 @@
 
 public class ColumnInfo {
-	/** colunm name*/
+	/** column name*/
 	private String columnName;
-	/** colunm type*/
-	private String columnType;
+	/** data type*/
+	private String dataType;
 	/** nullable*/
 	private String nullable;
+	/** data default*/
+	private String dataDefault;
+	/** comments*/
+	private String comments;
 	/**
-	 * @return the colunmName
+	 * @return the columnName
 	 */
-	public String getColunmName() {
+	public String getColumnName() {
 		return columnName;
 	}
 	/**
 	 * @param colunmName the colunmName to set
 	 */
-	public void setColunmName(String colunmName) {
+	public void setColumnName(String colunmName) {
 		this.columnName = colunmName;
 	}
 	/**
 	 * @return the colunmType
 	 */
 	public String getColunmType() {
-		return columnType;
+		return dataType;
 	}
 	/**
 	 * @param colunmType the colunmType to set
 	 */
 	public void setColunmType(String colunmType) {
-		this.columnType = colunmType;
+		this.dataType = colunmType;
 	}
 	/**
 	 * @return the nullable
 	 */
 	public String getNullable() {
 		return nullable;
+	}
+	/**
+	 * @return the dataType
+	 */
+	public String getDataType() {
+		return dataType;
+	}
+	/**
+	 * @param dataType the dataType to set
+	 */
+	public void setDataType(String dataType) {
+		this.dataType = dataType;
 	}
 	/**
 	 * @param nullable the nullable to set
@@ -66,8 +82,4 @@ public class ColumnInfo {
 	public void setComments(String comments) {
 		this.comments = comments;
 	}
-	/** data default*/
-	private String dataDefault;
-	/** comments*/
-	private String comments;
 }
