@@ -4,6 +4,20 @@ public class ColumnInfo {
 	private String columnName;
 	/** data type*/
 	private String dataType;
+	/** data type*/
+	private String dataLength;
+	/**
+	 * @return the dataLength
+	 */
+	public String getDataLength() {
+		return dataLength;
+	}
+	/**
+	 * @param dataLength the dataLength to set
+	 */
+	public void setDataLength(String dataLength) {
+		this.dataLength = dataLength;
+	}
 	/** nullable*/
 	private String nullable;
 	/** data default*/
@@ -25,7 +39,7 @@ public class ColumnInfo {
 	/**
 	 * @return the colunmType
 	 */
-	public String getColunmType() {
+	public String getDataType() {
 		return dataType;
 	}
 	/**
@@ -39,12 +53,6 @@ public class ColumnInfo {
 	 */
 	public String getNullable() {
 		return nullable;
-	}
-	/**
-	 * @return the dataType
-	 */
-	public String getDataType() {
-		return dataType;
 	}
 	/**
 	 * @param dataType the dataType to set

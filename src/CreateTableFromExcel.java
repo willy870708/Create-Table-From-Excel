@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -36,20 +37,20 @@ public class CreateTableFromExcel {
 	/** Column number of column name */
 	static final int COLUMN_NAME = 3;
 	
-	/** Row number of comments */
-	static final int ROW_COLUMN_COMMENTS = 1;
-	
 	/** Column number of data type */
 	static final int COLUMN_DATA_TYPE = 4;
 	
+	/** Column number of data length */
+	static final int COLUMN_DATA_LENGTH = 5;
+	
 	/** Column number of nullable */
-	static final int COLUMN_NULLABLE = 5;
+	static final int COLUMN_NULLABLE = 6;
 	
 	/** Column number of data default */
-	static final int COLUMN_DATA_DEFAULT = 6;
+	static final int COLUMN_DATA_DEFAULT = 7;
 	
 	/** Column number of comments */
-	static final int COLUMN_COMMENTS = 7;
+	static final int COLUMN_COMMENTS = 8;
 	
 
 	public static void main(String[] args) {
@@ -76,7 +77,12 @@ public class CreateTableFromExcel {
         
         /** Set columns information list */
         tableInfo.setColunmList(getColumnInfoList(sheet));
-        
+        System.out.println(tableInfo.getColunmList().get(1).getColumnName());
+        System.out.println(tableInfo.getColunmList().get(1).getDataType());
+        System.out.println(tableInfo.getColunmList().get(1).getDataLength());
+        System.out.println(tableInfo.getColunmList().get(1).getNullable());
+        System.out.println(tableInfo.getColunmList().get(1).getDataDefault());
+        System.out.println(tableInfo.getColunmList().get(1).getComments());
 	}
 	/**
 	 * 
@@ -95,6 +101,7 @@ public class CreateTableFromExcel {
 
         		columnInfo.setColumnName(sheet.getRow(row).getCell(COLUMN_NAME).getStringCellValue());
         		columnInfo.setDataType(sheet.getRow(row).getCell(COLUMN_DATA_TYPE).getStringCellValue());
+        		columnInfo.setDataLength(String.format("%.0f",sheet.getRow(row).getCell(COLUMN_DATA_LENGTH).getNumericCellValue()));
         		columnInfo.setNullable(sheet.getRow(row).getCell(COLUMN_NULLABLE).getStringCellValue());
         		columnInfo.setDataDefault(sheet.getRow(row).getCell(COLUMN_DATA_DEFAULT).getStringCellValue());
         		columnInfo.setComments(sheet.getRow(row).getCell(COLUMN_COMMENTS).getStringCellValue());
