@@ -126,27 +126,6 @@ public class CreateTableFromExcel {
 
 		tableInfo.setIndexKeyLists(indexKeyLists);
 
-		System.out.println(tableInfo.getColunmList().get(1).getColumnName());
-		System.out.println(tableInfo.getColunmList().get(1).getDataType());
-		System.out.println(tableInfo.getColunmList().get(1).getDataLength());
-		System.out.println(tableInfo.getColunmList().get(1).getNullable());
-		System.out.println(tableInfo.getColunmList().get(1).getDataDefault());
-		System.out.println(tableInfo.getColunmList().get(1).getComments());
-
-		System.out.println(tableInfo.getPrimaryKey().size());
-
-		tableInfo.getPrimaryKey().stream().forEach(columnInfo -> {
-			System.out.println(columnInfo.getColumnName());
-		});
-
-		System.out.println(tableInfo.getIndexKeyLists().size());
-		tableInfo.getIndexKeyLists().stream().forEach(indexKey -> {
-			System.err.println("------ index separation  ------");
-			indexKey.stream().forEach(columnInfo -> {
-				System.out.println(columnInfo.getColumnName());
-			});
-		});
-
 	}
 
 	/**
@@ -170,6 +149,13 @@ public class CreateTableFromExcel {
 		return columnInfoList;
 	}
 
+	/**
+	 * 
+	 * @param sheet
+	 * @param columnNumber
+	 * @return List<ColumnInfo>
+	 * @
+	 */
 	static private List<ColumnInfo> getKey(XSSFSheet sheet, int columnNumber) {
 		List<ColumnInfo> primaryKey = new ArrayList<ColumnInfo>();
 		List<ColumnInfo> columnInfoList = getColumnInfoList(sheet);
