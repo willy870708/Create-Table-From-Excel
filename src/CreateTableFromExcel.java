@@ -13,13 +13,13 @@ public class CreateTableFromExcel {
 	static final int ROW_MAX = 1048576;
 
 	/** Row number of table name */
-	static final int ROW_TABLE_NAME = 0;
+	static final int ROW_TABLE_NAME = 1;
 
 	/** Column number of table name */
 	static final int COLUMN_TABLE_NAME = 1;
 
 	/** Row number of table schema */
-	static final int ROW_TABLE_SCHEMA = 1;
+	static final int ROW_TABLE_SCHEMA = 0;
 
 	/** Column number of table schema */
 	static final int COLUMN_TABLE_SCHEMA = 1;
@@ -125,7 +125,11 @@ public class CreateTableFromExcel {
 		}
 
 		tableInfo.setIndexKeyLists(indexKeyLists);
-
+		
+		/** Get create table SQL*/
+		String sql = getCreateTableSQL(tableInfo);
+		
+		System.out.println(sql);
 	}
 
 	/**
@@ -184,4 +188,56 @@ public class CreateTableFromExcel {
 		return primaryKey;
 	}
 
+	static private String getCreateTableSQL(TableInfo tableInfo) {
+		StringBuilder sql = new StringBuilder();
+		sql.append("CREATE TABLE ");
+		
+		if(StringUtils.isNotBlank(tableInfo.getTableSchema())){
+			sql.append(tableInfo.getTableSchema() + ".");
+		}
+		
+		sql.append(tableInfo.getTableName() + "(\n");
+		
+		/** Create column */
+		int pkNum = tableInfo.getPrimaryKey().size();
+
+		tableInfo.getColunmList().stream().forEach(columnInfo ->{
+			sql.append("\t"+columnInfo.getColumnName() + " ");
+			sql.append(columnInfo.getDataType());
+
+			if(StringUtils.isNotBlank(columnInfo.getDataLength())) {
+				sql.append("(" + columnInfo.getDataLength() + ") ");
+			}
+			
+			if(StringUtils.isNotBlank(columnInfo.getDataDefault())) {
+				sql.append(" DEFAULT ");
+				
+				if("DATE".equalsIgnoreCase(columnInfo.getDataType())
+					||	"NUMBER".equalsIgnoreCase(columnInfo.getDataType())){
+						sql.append(columnInfo.getDataDefault() + " ");
+				}
+				else {
+					sql.append("'" + columnInfo.getDataDefault() + "' ");
+				}
+			}
+			
+			if(StringUtils.isBlank(columnInfo.getNullable())) {
+				sql.append("NOT NULL");
+			}
+			
+			sql.append(", \n");
+		});
+		sql.append("\tCONSTRAINT \"PK_" + tableInfo.getTableName() + "\" ");
+		sql.append("PRIMARY KEY (");
+		tableInfo.getPrimaryKey().forEach(columnInfo ->{
+			sql.append("\"" + columnInfo.getColumnName() + "\"");
+			if(1 < pkNum && !columnInfo.equals(tableInfo.getPrimaryKey().get(pkNum - 1))) {
+				sql.append(",");
+			}
+		});
+		sql.append(")");
+		sql.append("\n);");
+		
+		return sql.toString();
+	}
 }
