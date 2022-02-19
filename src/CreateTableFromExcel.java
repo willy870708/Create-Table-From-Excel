@@ -196,11 +196,38 @@ public class CreateTableFromExcel {
 		return keyList;
 	}
 
+	/**
+	 * 
+	 * @param tableInfo
+	 * @return String
+	 * @remark generate create table SQL
+	 */
 	static private String getCreateTableSQL(TableInfo tableInfo) {
 		StringBuilder sql = new StringBuilder();
+		
+		/**  create column and primary constraint */
+		sql.append(getCreateColumnSQL(tableInfo));
+		
+		/** create index */
+		sql.append(getCreateIndexSql(tableInfo));
+
+		/** create column comment */
+		sql.append(getCreateComment(tableInfo));
+
+		return sql.toString();
+	}
+	
+	/**
+	 * 
+	 * @param tableInfo
+	 * @return StringBuilder
+	 * @remark create column and primary constraint
+	 */
+	static private StringBuilder getCreateColumnSQL(TableInfo tableInfo) {
+		StringBuilder sql = new StringBuilder();
+
 		sql.append("CREATE TABLE ");
 		sql.append(tableInfo.getTableSchema()  + "." + tableInfo.getTableName() + "(\n");
-
 		tableInfo.getColunmList().stream().forEach(columnInfo -> {
 			sql.append("\t" + columnInfo.getColumnName() + " ");
 			sql.append(columnInfo.getDataType());
@@ -226,13 +253,26 @@ public class CreateTableFromExcel {
 
 			sql.append(", \n");
 		});
+
+		/** primary key constraint */
 		sql.append("\tCONSTRAINT \"PK_" + tableInfo.getTableName() + "\" ");
 		sql.append("PRIMARY KEY (");
 		sql.append(tableInfo.getPrimaryKey().getPrimaryKeyList().stream().map(ColumnInfo::getColumnName).collect(Collectors.joining(", ")));
-
 		sql.append(")");
-		sql.append("\n);\n");
+		sql.append("\n);\n\n");
 
+		return sql;
+	}
+	
+	/**
+	 * 
+	 * @param tableInfo
+	 * @return StringBuilder
+	 * @remark create index
+	 */
+	static StringBuilder getCreateIndexSql(TableInfo tableInfo) {
+		StringBuilder sql = new StringBuilder();
+		
 		tableInfo.getIndexKeyLists().stream().forEach(indexKey -> {
 			sql.append("CREATE INDEX " + tableInfo.getTableSchema() + ".");
 			sql.append("IX_" + tableInfo.getTableName() + "_" +String.format("%02d", tableInfo.getIndexKeyLists().indexOf(indexKey) + 1));
@@ -243,12 +283,18 @@ public class CreateTableFromExcel {
 
 		sql.append("\n");
 
+		return sql;
+	}
+	
+	static StringBuilder getCreateComment(TableInfo tableInfo) {
+		StringBuilder sql = new StringBuilder();
+		
 		tableInfo.getColumnList().stream().forEach(columnInfo ->{
 			sql.append("COMMENT ON COLUMN " + tableInfo.getTableSchema()  + "." + tableInfo.getTableName());
 			sql.append("." + columnInfo.getColumnName() + " is '" + columnInfo.getComments() + "';\n");
 		});
 
-//		COMMENT ON COLUMN "APUSER"."TB_USER"."CREATR_TIME" IS '資料建立時間';
-		return sql.toString();
+		return sql;
 	}
+	
 }
