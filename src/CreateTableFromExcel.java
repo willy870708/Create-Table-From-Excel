@@ -1,6 +1,8 @@
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -32,7 +34,7 @@ public class CreateTableFromExcel {
 	static final int COLUMN_TABLE_COMMENT = 1;
 
 	/** Row number of comments */
-	static final int ROW_NAME = 1;
+	static final int ROW_COLUMN_NAME = 1;
 	
 	/** Column number of column name */
 	static final int COLUMN_NAME = 3;
@@ -51,6 +53,39 @@ public class CreateTableFromExcel {
 	
 	/** Column number of comments */
 	static final int COLUMN_COMMENTS = 8;
+	
+	/** Column number of primary key */
+	static final int COLUMN_PRIMARY_KEY = 9;
+	
+	/** Column number of index key 1 */
+	static final int COLUMN_INDEX_KEY_1 = 10;
+	
+	/** Column number of index key 2 */
+	static final int COLUMN_INDEX_KEY_2 = 11;
+	
+	/** Column number of index key 3 */
+	static final int COLUMN_INDEX_KEY_3 = 12;
+	
+	/** Column number of index key 4 */
+	static final int COLUMN_INDEX_KEY_4 = 13;
+	
+	/** Column number of index key 5 */
+	static final int COLUMN_INDEX_KEY_5 = 14;
+	
+	/** Column number of index key 6 */
+	static final int COLUMN_INDEX_KEY_6 = 15;
+	
+	/** Column number of index key 7 */
+	static final int COLUMN_INDEX_KEY_7 = 16;
+	
+	/** Column number of index key 8 */
+	static final int COLUMN_INDEX_KEY_8 = 17;
+	
+	/** Column number of index key 9 */
+	static final int COLUMN_INDEX_KEY_9 = 18;
+	
+	/** Column number of index key 1 */
+	static final int COLUMN_INDEX_KEY_10 = 19;
 	
 
 	public static void main(String[] args) {
@@ -77,12 +112,35 @@ public class CreateTableFromExcel {
         
         /** Set columns information list */
         tableInfo.setColunmList(getColumnInfoList(sheet));
+        
+        /** Set primary key */
+        tableInfo.setPrimaryKey(getKey(sheet, COLUMN_PRIMARY_KEY));
+
+        /** Set index keys */
+        List<List<ColumnInfo>> indexKeyLists = new ArrayList<List<ColumnInfo>>();
+        
+        for(int columnNumber = COLUMN_INDEX_KEY_1; columnNumber <= COLUMN_INDEX_KEY_10; columnNumber++) {
+        	List<ColumnInfo> indexKeys = getKey(sheet, columnNumber);
+        	if(indexKeys.isEmpty()) {
+        		break;
+        	}
+
+        	indexKeyLists.add(indexKeys);
+        }
+        
+        tableInfo.setIndexKeyLists(indexKeyLists);
+        
         System.out.println(tableInfo.getColunmList().get(1).getColumnName());
         System.out.println(tableInfo.getColunmList().get(1).getDataType());
         System.out.println(tableInfo.getColunmList().get(1).getDataLength());
         System.out.println(tableInfo.getColunmList().get(1).getNullable());
         System.out.println(tableInfo.getColunmList().get(1).getDataDefault());
         System.out.println(tableInfo.getColunmList().get(1).getComments());
+        
+        System.out.println(tableInfo.getPrimaryKey().size());
+        tableInfo.getPrimaryKey().stream().forEach(columnInfo ->{
+        	System.out.println(columnInfo.getColumnName());
+        });
 	}
 	/**
 	 * 
@@ -93,7 +151,7 @@ public class CreateTableFromExcel {
 	static private List<ColumnInfo> getColumnInfoList(XSSFSheet sheet){
 		List<ColumnInfo> columnInfoList = new ArrayList<ColumnInfo>();
 		
-        for(int row = ROW_NAME; row <= ROW_MAX; row++ ) {
+        for(int row = ROW_COLUMN_NAME; row <= ROW_MAX; row++ ) {
         		if(StringUtils.isBlank((sheet.getRow(row).getCell(3).getStringCellValue()))) {
         			break;
         		}
@@ -101,7 +159,7 @@ public class CreateTableFromExcel {
 
         		columnInfo.setColumnName(sheet.getRow(row).getCell(COLUMN_NAME).getStringCellValue());
         		columnInfo.setDataType(sheet.getRow(row).getCell(COLUMN_DATA_TYPE).getStringCellValue());
-        		columnInfo.setDataLength(String.format("%.0f",sheet.getRow(row).getCell(COLUMN_DATA_LENGTH).getNumericCellValue()));
+        		columnInfo.setDataLength(sheet.getRow(row).getCell(COLUMN_DATA_LENGTH).getStringCellValue());
         		columnInfo.setNullable(sheet.getRow(row).getCell(COLUMN_NULLABLE).getStringCellValue());
         		columnInfo.setDataDefault(sheet.getRow(row).getCell(COLUMN_DATA_DEFAULT).getStringCellValue());
         		columnInfo.setComments(sheet.getRow(row).getCell(COLUMN_COMMENTS).getStringCellValue());
@@ -110,6 +168,32 @@ public class CreateTableFromExcel {
         }
 		
 		return columnInfoList;
+	}
+	
+	static private List<ColumnInfo> getKey(XSSFSheet sheet, int columnNumber){
+		List<ColumnInfo> primaryKey = new ArrayList<ColumnInfo>();
+		List<ColumnInfo> columnInfoList = getColumnInfoList(sheet);
+		
+		/** Map<Sequence, Row> */
+		Map<String, Integer> pkSequenceMap = new HashMap<String, Integer>();
+		for(int row = ROW_COLUMN_NAME; row <= columnInfoList.size() ; row++) {
+			String pkSequence = sheet.getRow(row).getCell(columnNumber).getStringCellValue();
+
+			if(StringUtils.isNotBlank(pkSequence)) {
+				pkSequenceMap.put(pkSequence, row);
+				System.err.println("123");
+			}	
+		}
+		
+		for(int seqNum = 1 ; seqNum <= pkSequenceMap.size(); seqNum++) {
+			primaryKey.add(
+				columnInfoList.get(pkSequenceMap.get(Integer.toString(seqNum)) - 1)
+			);
+			
+		}
+		
+		
+		return primaryKey;
 	}
 
 }
