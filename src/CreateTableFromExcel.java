@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -110,25 +111,33 @@ public class CreateTableFromExcel {
 		tableInfo.setColunmList(getColumnInfoList(sheet));
 
 		/** Set primary key */
-		tableInfo.setPrimaryKey(getKey(sheet, COLUMN_PRIMARY_KEY));
+		PrimaryKey primaryKey = new PrimaryKey();
+		primaryKey.setPrimaryKeyList(getKeyList(sheet, COLUMN_PRIMARY_KEY));
+		primaryKey.setPrimaryKeyName(sheet.getRow(0).getCell(COLUMN_PRIMARY_KEY).getStringCellValue());
+		
+		tableInfo.setPrimaryKey(primaryKey);
 
 		/** Set index keys */
-		List<List<ColumnInfo>> indexKeyLists = new ArrayList<List<ColumnInfo>>();
+		List<IndexKey> indexKeyList = new ArrayList<IndexKey>();
 
 		for (int columnNumber = COLUMN_INDEX_KEY_1; columnNumber <= COLUMN_INDEX_KEY_10; columnNumber++) {
-			List<ColumnInfo> indexKeys = getKey(sheet, columnNumber);
+			IndexKey indexKey = new IndexKey();
+			List<ColumnInfo> indexKeys = getKeyList(sheet, columnNumber);
 			if (indexKeys.isEmpty()) {
 				break;
 			}
 
-			indexKeyLists.add(indexKeys);
+			indexKey.setIndexKeyList(indexKeys);
+			indexKey.setIndexName(sheet.getRow(0).getCell(columnNumber).getStringCellValue());
+			
+			indexKeyList.add(indexKey);
 		}
 
-		tableInfo.setIndexKeyLists(indexKeyLists);
+		tableInfo.setIndexKeyLists(indexKeyList);
 		
-		/** Get create table SQL*/
+		/** Get create table SQL */
 		String sql = getCreateTableSQL(tableInfo);
-		
+
 		System.out.println(sql);
 	}
 
@@ -148,12 +157,12 @@ public class CreateTableFromExcel {
 
 			ColumnInfo columnInfo = new ColumnInfo();
 			columnInfo.setColumnName(sheet.getRow(row).getCell(COLUMN_NAME).getStringCellValue());
-    		columnInfo.setDataType(sheet.getRow(row).getCell(COLUMN_DATA_TYPE).getStringCellValue());
-    		columnInfo.setDataLength(sheet.getRow(row).getCell(COLUMN_DATA_LENGTH).getStringCellValue());
-    		columnInfo.setNullable(sheet.getRow(row).getCell(COLUMN_NULLABLE).getStringCellValue());
-    		columnInfo.setDataDefault(sheet.getRow(row).getCell(COLUMN_DATA_DEFAULT).getStringCellValue());
-    		columnInfo.setComments(sheet.getRow(row).getCell(COLUMN_COMMENTS).getStringCellValue());
-    		
+			columnInfo.setDataType(sheet.getRow(row).getCell(COLUMN_DATA_TYPE).getStringCellValue());
+			columnInfo.setDataLength(sheet.getRow(row).getCell(COLUMN_DATA_LENGTH).getStringCellValue());
+			columnInfo.setNullable(sheet.getRow(row).getCell(COLUMN_NULLABLE).getStringCellValue());
+			columnInfo.setDataDefault(sheet.getRow(row).getCell(COLUMN_DATA_DEFAULT).getStringCellValue());
+			columnInfo.setComments(sheet.getRow(row).getCell(COLUMN_COMMENTS).getStringCellValue());
+
 			columnInfoList.add(columnInfo);
 		}
 
@@ -164,12 +173,11 @@ public class CreateTableFromExcel {
 	 * 
 	 * @param sheet
 	 * @param columnNumber
-	 * @return List<ColumnInfo>
-	 * @
+	 * @return List<ColumnInfo> @
 	 */
-	static private List<ColumnInfo> getKey(XSSFSheet sheet, int columnNumber) {
-		List<ColumnInfo> primaryKey = new ArrayList<ColumnInfo>();
+	static private List<ColumnInfo> getKeyList(XSSFSheet sheet, int columnNumber) {
 		List<ColumnInfo> columnInfoList = getColumnInfoList(sheet);
+		List<ColumnInfo> keyList = new ArrayList<ColumnInfo>();
 
 		/** Map<Sequence, Row> */
 		Map<String, Integer> pkSequenceMap = new HashMap<String, Integer>();
@@ -182,62 +190,65 @@ public class CreateTableFromExcel {
 		}
 
 		for (int seqNum = 1; seqNum <= pkSequenceMap.size(); seqNum++) {
-			primaryKey.add(columnInfoList.get(pkSequenceMap.get(Integer.toString(seqNum)) - 1));
+			keyList.add(columnInfoList.get(pkSequenceMap.get(Integer.toString(seqNum)) - 1));
 		}
-
-		return primaryKey;
+		
+		return keyList;
 	}
 
 	static private String getCreateTableSQL(TableInfo tableInfo) {
 		StringBuilder sql = new StringBuilder();
 		sql.append("CREATE TABLE ");
-		
-		if(StringUtils.isNotBlank(tableInfo.getTableSchema())){
-			sql.append(tableInfo.getTableSchema() + ".");
-		}
-		
-		sql.append(tableInfo.getTableName() + "(\n");
-		
-		/** Create column */
-		int pkNum = tableInfo.getPrimaryKey().size();
+		sql.append(tableInfo.getTableSchema()  + "." + tableInfo.getTableName() + "(\n");
 
-		tableInfo.getColunmList().stream().forEach(columnInfo ->{
-			sql.append("\t"+columnInfo.getColumnName() + " ");
+		tableInfo.getColunmList().stream().forEach(columnInfo -> {
+			sql.append("\t" + columnInfo.getColumnName() + " ");
 			sql.append(columnInfo.getDataType());
 
-			if(StringUtils.isNotBlank(columnInfo.getDataLength())) {
+			if (StringUtils.isNotBlank(columnInfo.getDataLength())) {
 				sql.append("(" + columnInfo.getDataLength() + ") ");
 			}
-			
-			if(StringUtils.isNotBlank(columnInfo.getDataDefault())) {
+
+			if (StringUtils.isNotBlank(columnInfo.getDataDefault())) {
 				sql.append(" DEFAULT ");
-				
-				if("DATE".equalsIgnoreCase(columnInfo.getDataType())
-					||	"NUMBER".equalsIgnoreCase(columnInfo.getDataType())){
-						sql.append(columnInfo.getDataDefault() + " ");
-				}
-				else {
+
+				if ("DATE".equalsIgnoreCase(columnInfo.getDataType())
+						|| "NUMBER".equalsIgnoreCase(columnInfo.getDataType())) {
+					sql.append(columnInfo.getDataDefault() + " ");
+				} else {
 					sql.append("'" + columnInfo.getDataDefault() + "' ");
 				}
 			}
-			
-			if(StringUtils.isBlank(columnInfo.getNullable())) {
+
+			if (!"Y".equals(columnInfo.getNullable())) {
 				sql.append("NOT NULL");
 			}
-			
+
 			sql.append(", \n");
 		});
 		sql.append("\tCONSTRAINT \"PK_" + tableInfo.getTableName() + "\" ");
 		sql.append("PRIMARY KEY (");
-		tableInfo.getPrimaryKey().forEach(columnInfo ->{
-			sql.append("\"" + columnInfo.getColumnName() + "\"");
-			if(1 < pkNum && !columnInfo.equals(tableInfo.getPrimaryKey().get(pkNum - 1))) {
-				sql.append(",");
-			}
-		});
+		sql.append(tableInfo.getPrimaryKey().getPrimaryKeyList().stream().map(ColumnInfo::getColumnName).collect(Collectors.joining(", ")));
+
 		sql.append(")");
-		sql.append("\n);");
-		
+		sql.append("\n);\n");
+
+		tableInfo.getIndexKeyLists().stream().forEach(indexKey -> {
+			sql.append("CREATE INDEX " + tableInfo.getTableSchema() + ".");
+			sql.append("IX_" + tableInfo.getTableName() + "_" +String.format("%02d", tableInfo.getIndexKeyLists().indexOf(indexKey) + 1));
+			sql.append(" on " + tableInfo.getTableSchema()  + "." + tableInfo.getTableName() + " (");
+			sql.append(indexKey.getIndexKeyList().stream().map(ColumnInfo::getColumnName).collect(Collectors.joining(", ")));
+			sql.append(");\n");
+		});
+
+		sql.append("\n");
+
+		tableInfo.getColumnList().stream().forEach(columnInfo ->{
+			sql.append("COMMENT ON COLUMN " + tableInfo.getTableSchema()  + "." + tableInfo.getTableName());
+			sql.append("." + columnInfo.getColumnName() + " is '" + columnInfo.getComments() + "';\n");
+		});
+
+//		COMMENT ON COLUMN "APUSER"."TB_USER"."CREATR_TIME" IS '資料建立時間';
 		return sql.toString();
 	}
 }

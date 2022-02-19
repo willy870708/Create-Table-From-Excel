@@ -11,9 +11,9 @@ public class TableInfo {
 	/** column list */
 	private List<ColumnInfo> columnList = new ArrayList<ColumnInfo>();
 	/** primary key */
-	private List<ColumnInfo> primaryKey = new ArrayList<ColumnInfo>();
+	private PrimaryKey primaryKey = new PrimaryKey();
 	/** index keys(no more than 10)*/
-	private List<List<ColumnInfo>> indexKeyLists = new ArrayList<List<ColumnInfo>>();
+	private List<IndexKey> indexKeyLists = new ArrayList<IndexKey>();
 	/**
 	 * @return the tableSchema
 	 */
@@ -63,27 +63,39 @@ public class TableInfo {
 		this.columnList = colunmList;
 	}
 	/**
-	 * @return the primaryKey
+	 * @return the columnList
 	 */
-	public List<ColumnInfo> getPrimaryKey() {
-		return primaryKey;
+	public List<ColumnInfo> getColumnList() {
+		return columnList;
 	}
 	/**
-	 * @param primaryKey the primaryKey to set
+	 * @param columnList the columnList to set
 	 */
-	public void setPrimaryKey(List<ColumnInfo> primaryKey) {
-		this.primaryKey = primaryKey;
+	public void setColumnList(List<ColumnInfo> columnList) {
+		this.columnList = columnList;
+	}
+	/**
+	 * @return the primaryKey
+	 */
+	public PrimaryKey getPrimaryKey() {
+		return primaryKey;
 	}
 	/**
 	 * @return the indexKeyLists
 	 */
-	public List<List<ColumnInfo>> getIndexKeyLists() {
+	public List<IndexKey> getIndexKeyLists() {
 		return indexKeyLists;
 	}
 	/**
 	 * @param indexKeyLists the indexKeyLists to set
 	 */
-	public void setIndexKeyLists(List<List<ColumnInfo>> indexKeyLists) {
+	public void setIndexKeyLists(List<IndexKey> indexKeyLists) {
 		this.indexKeyLists = indexKeyLists;
+	}
+	/**
+	 * @param primaryKey the primaryKey to set
+	 */
+	public void setPrimaryKey(PrimaryKey primaryKey) {
+		this.primaryKey = primaryKey;
 	}
 }
