@@ -294,6 +294,10 @@ public class CreateTableFromExcel {
 			sql.append("." + columnInfo.getColumnName() + " is '" + columnInfo.getComments() + "';\n");
 		});
 
+		/** table comment */
+		sql.append("COMMENT ON TABLE " + tableInfo.getTableSchema()  + "." + tableInfo.getTableName());
+		sql.append(" is '" + tableInfo.getTableComment() + "';");
+		
 		return sql;
 	}
 	
