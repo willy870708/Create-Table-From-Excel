@@ -12,84 +12,13 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import Model.ColumnInfo;
 import Model.IndexKey;
+import Model.Location;
 import Model.PrimaryKey;
 import Model.TableInfo;
 
 public class XSSFSheetSerivce {
 	/** Max row number of Excel */
 	static final int ROW_MAX = 1048576;
-
-	/** Row number of table name */
-	static final int ROW_TABLE_NAME = 1;
-
-	/** Column number of table name */
-	static final int COLUMN_TABLE_NAME = 1;
-
-	/** Row number of table schema */
-	static final int ROW_TABLE_SCHEMA = 0;
-
-	/** Column number of table schema */
-	static final int COLUMN_TABLE_SCHEMA = 1;
-
-	/** Row number of table comment */
-	static final int ROW_TABLE_COMMENT = 2;
-
-	/** Column number of comments */
-	static final int COLUMN_TABLE_COMMENT = 1;
-
-	/** Row number of comments */
-	static final int ROW_COLUMN_NAME = 1;
-
-	/** Column number of column name */
-	static final int COLUMN_NAME = 3;
-
-	/** Column number of data type */
-	static final int COLUMN_DATA_TYPE = 4;
-
-	/** Column number of data length */
-	static final int COLUMN_DATA_LENGTH = 5;
-
-	/** Column number of nullable */
-	static final int COLUMN_NULLABLE = 6;
-
-	/** Column number of data default */
-	static final int COLUMN_DATA_DEFAULT = 7;
-
-	/** Column number of comments */
-	static final int COLUMN_COMMENTS = 8;
-
-	/** Column number of primary key */
-	static final int COLUMN_PRIMARY_KEY = 9;
-
-	/** Column number of index key 1 */
-	static final int COLUMN_INDEX_KEY_1 = 10;
-
-	/** Column number of index key 2 */
-	static final int COLUMN_INDEX_KEY_2 = 11;
-
-	/** Column number of index key 3 */
-	static final int COLUMN_INDEX_KEY_3 = 12;
-
-	/** Column number of index key 4 */
-	static final int COLUMN_INDEX_KEY_4 = 13;
-
-	/** Column number of index key 5 */
-	static final int COLUMN_INDEX_KEY_5 = 14;
-
-	/** Column number of index key 6 */
-	static final int COLUMN_INDEX_KEY_6 = 15;
-
-	/** Column number of index key 7 */
-	static final int COLUMN_INDEX_KEY_7 = 16;
-
-	/** Column number of index key 8 */
-	static final int COLUMN_INDEX_KEY_8 = 17;
-
-	/** Column number of index key 9 */
-	static final int COLUMN_INDEX_KEY_9 = 18;
-
-	/** Column number of index key 1 */
-	static final int COLUMN_INDEX_KEY_10 = 19;
 
 	/**
 	 * 
@@ -100,7 +29,7 @@ public class XSSFSheetSerivce {
 	public String getCreateTableSQL(XSSFWorkbook book) {
 		/** Get sheet */
 		XSSFSheet sheet = book.getSheetAt(0);
-		
+
 		/** Set TableInfo field */
 		TableInfo tableInfo = getTableInfo(sheet);
 
@@ -127,18 +56,18 @@ public class XSSFSheetSerivce {
 	private List<ColumnInfo> getColumnInfoList(XSSFSheet sheet) {
 		List<ColumnInfo> columnInfoList = new ArrayList<ColumnInfo>();
 
-		for (int row = ROW_COLUMN_NAME; row <= ROW_MAX; row++) {
-			if (StringUtils.isBlank((sheet.getRow(row).getCell(3).getStringCellValue()))) {
+		for (int row = Location.COLUNM_NAME.getRow() + 1; row <= ROW_MAX; row++) {
+			if (StringUtils.isBlank((sheet.getRow(row).getCell(Location.COLUNM_NAME.getCell()).getStringCellValue()))) {
 				break;
 			}
 
 			ColumnInfo columnInfo = new ColumnInfo();
-			columnInfo.setColumnName(sheet.getRow(row).getCell(COLUMN_NAME).getStringCellValue());
-			columnInfo.setDataType(sheet.getRow(row).getCell(COLUMN_DATA_TYPE).getStringCellValue());
-			columnInfo.setDataLength(sheet.getRow(row).getCell(COLUMN_DATA_LENGTH).getStringCellValue());
-			columnInfo.setNullable(sheet.getRow(row).getCell(COLUMN_NULLABLE).getStringCellValue());
-			columnInfo.setDataDefault(sheet.getRow(row).getCell(COLUMN_DATA_DEFAULT).getStringCellValue());
-			columnInfo.setComments(sheet.getRow(row).getCell(COLUMN_COMMENTS).getStringCellValue());
+			columnInfo.setColumnName(sheet.getRow(row).getCell(Location.COLUNM_NAME.getCell()).getStringCellValue());
+			columnInfo.setDataType(sheet.getRow(row).getCell(Location.DATA_TYPE.getCell()).getStringCellValue());
+			columnInfo.setDataLength(sheet.getRow(row).getCell(Location.DATA_LENGTH.getCell()).getStringCellValue());
+			columnInfo.setNullable(sheet.getRow(row).getCell(Location.NULLABLE.getCell()).getStringCellValue());
+			columnInfo.setDataDefault(sheet.getRow(row).getCell(Location.DATA_DEFAULT.getCell()).getStringCellValue());
+			columnInfo.setComments(sheet.getRow(row).getCell(Location.COMMENTS.getCell()).getStringCellValue());
 
 			columnInfoList.add(columnInfo);
 		}
@@ -158,7 +87,7 @@ public class XSSFSheetSerivce {
 
 		/** Map<Sequence, Row> */
 		Map<String, Integer> pkSequenceMap = new HashMap<String, Integer>();
-		for (int row = ROW_COLUMN_NAME; row <= columnInfoList.size(); row++) {
+		for (int row = Location.COLUNM_NAME.getRow() + 1; row <= columnInfoList.size(); row++) {
 			String pkSequence = sheet.getRow(row).getCell(columnNumber).getStringCellValue();
 
 			if (StringUtils.isNotBlank(pkSequence)) {
@@ -276,24 +205,29 @@ public class XSSFSheetSerivce {
 		TableInfo tableInfo = new TableInfo();
 
 		/** Set table name¡Bschema¡Bcomment */
-		tableInfo.setTableName(sheet.getRow(ROW_TABLE_NAME).getCell(COLUMN_TABLE_NAME).getStringCellValue());
-		tableInfo.setTableSchema(sheet.getRow(ROW_TABLE_SCHEMA).getCell(COLUMN_TABLE_SCHEMA).getStringCellValue());
-		tableInfo.setTableComment(sheet.getRow(ROW_TABLE_COMMENT).getCell(COLUMN_TABLE_COMMENT).getStringCellValue());
+		tableInfo.setTableName(
+				sheet.getRow(Location.TABLE_NAME.getRow()).getCell(Location.TABLE_NAME.getCell()).getStringCellValue());
+		tableInfo.setTableSchema(sheet.getRow(Location.SCHEMA_NAME.getRow()).getCell(Location.SCHEMA_NAME.getCell())
+				.getStringCellValue());
+		tableInfo.setTableComment(sheet.getRow(Location.TABLE_COMMENT.getRow())
+				.getCell(Location.TABLE_COMMENT.getCell()).getStringCellValue());
 
 		/** Set columns information list */
 		tableInfo.setColunmList(getColumnInfoList(sheet));
 
 		/** Set primary key */
 		PrimaryKey primaryKey = new PrimaryKey();
-		primaryKey.setPrimaryKeyList(getKeyList(sheet, COLUMN_PRIMARY_KEY));
-		primaryKey.setPrimaryKeyName(sheet.getRow(0).getCell(COLUMN_PRIMARY_KEY).getStringCellValue());
+		primaryKey.setPrimaryKeyList(getKeyList(sheet, Location.PRIMARY_KEY.getCell()));
+		primaryKey.setPrimaryKeyName(sheet.getRow(Location.PRIMARY_KEY.getRow()).getCell(Location.PRIMARY_KEY.getCell())
+				.getStringCellValue());
 
 		tableInfo.setPrimaryKey(primaryKey);
 
 		/** Set index keys */
 		List<IndexKey> indexKeyList = new ArrayList<IndexKey>();
 
-		for (int columnNumber = COLUMN_INDEX_KEY_1; columnNumber <= COLUMN_INDEX_KEY_10; columnNumber++) {
+		for (int columnNumber = Location.INDEX_01.getCell(); columnNumber <= Location.INDEX_10
+				.getCell(); columnNumber++) {
 			IndexKey indexKey = new IndexKey();
 			List<ColumnInfo> indexKeys = getKeyList(sheet, columnNumber);
 			if (indexKeys.isEmpty()) {
